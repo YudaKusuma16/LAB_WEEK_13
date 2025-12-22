@@ -1,0 +1,51 @@
+LAB WEEK 13
+Nama: Yuda Kusuma
+NIM: 00000110913
+
+1. Why is MVVM important? Which files represent Model, which files represent View, and which files represent ViewModel?
+Jawab: 
+MVVM (Model-View-ViewModel) penting karena memungkinkan pemisahan yang jelas antara UI (View) dan logika bisnis (Model/ViewModel).Pemisahan ini membuat aplikasi lebih mudah untuk mengubah desain UI atau memperbarui logika Model/bisnis tanpa memengaruhi komponen lain. Ini mempermudah penambahan fitur baru dan pengujian kode yang sudah ada.
+MVVM sangat berguna untuk membangun aplikasi besar yang kompleks yang menggunakan banyak data dan tampilan.
+
+Komponen MVVM dalam Proyek:
+a. Model (Data Layer): Merepresentasikan lapisan data.
+b. File: Movie.kt, MovieDao.kt, MovieDatabase.kt.
+c. View (UI): Tampilan pengguna yang menampilkan data.
+d. File: MainActivity.kt, activity_main.xml.
+e. ViewModel: Mengambil data dari Model dan menyediakannya untuk View.
+f. File: MovieViewModel.kt.
+
+2. In Part 1, you implemented Data Binding, why is this more efficient than using the normal method?
+Jawab:
+Data Binding lebih efisien daripada metode normal (misalnya, menggunakan findViewById dan memperbarui UI secara manual) karena:
+-. Mengurangi Boilerplate Code: Data Binding menghilangkan kebutuhan untuk memanggil findViewById.
+-. Pembaruan UI Otomatis: Dengan mengikat (bind) data dari ViewModel langsung ke elemen UI di file XML (contoh: app:list="@{viewModel.popularMovies}"), framework secara otomatis akan memperbarui tampilan setiap kali data di ViewModel (LiveData atau StateFlow) berubah.
+-. Keterbacaan dan Pemeliharaan: Logika untuk mengisi data ke View dipindahkan dari Activity/Fragment ke dalam layout XML dan Binding Adapter (RecyclerViewBinding.kt), membuat Activity/Fragment lebih bersih dan fokus pada controller logic yang minimal.
+
+3. In Part 2, you implemented the Singleton Pattern, why is this important?
+Jawab:
+Pola Singleton diimplementasikan pada MovieDatabase.kt (MovieDatabase.getInstance()) untuk memastikan hanya ada satu instansi dari database sepanjang aplikasi berjalan di banyak thread.
+
+Kepentingannya ada beberapa:
+-. Membuat instansi database baru (menggunakan Room) adalah proses yang mahal (membutuhkan banyak sumber daya). Singleton mencegah pemborosan ini. 
+-. Menjamin validitas data dan mencegah Race Conditions (situasi di mana banyak thread mencoba mengakses atau memodifikasi objek yang sama secara bersamaan), karena semua thread berbagi satu instansi database yang sama. Penggunaan @Volatile dan synchronized() semakin menjamin hal ini.
+
+4. In Part 2 & 3, you implemented the Repository Pattern, why is this important?
+Jawab: 
+Repository Pattern adalah pola desain yang bertindak sebagai lapisan perantara antara ViewModel dan sumber data. Dalam proyek ini, Repository Pattern penting karena:
+-. Sinkronisasi Data: Repository menyediakan mekanisme untuk menyinkronkan data aplikasi antara web service (API) dan database lokal (Room).
+-. Data Selalu Up-to-Date: Pola ini memastikan bahwa data di database lokal akan selalu diperbarui dengan data di layanan web.
+-. Akses Offline: Pola ini memungkinkan pengguna untuk mengakses aplikasi dan melihat data yang sudah di-cache di database lokal, bahkan saat tidak ada koneksi internet.
+-. Abstraksi Sumber Data: ViewModel hanya berinteraksi dengan Repository, dan tidak perlu tahu apakah data berasal dari API atau database lokal. Ini membuat ViewModel lebih sederhana dan tidak peduli dengan detail implementasi sumber data.
+
+5. In part 3, you implemented the Worker Manager, is there another way to refresh your database with the latest data other than using Worker?
+Jawab:
+Ya, ada beberapa cara lain untuk me-refresh database dengan data terbaru selain menggunakan WorkManager:
+*. Pemuatan Data saat Aplikasi Dibuka (Foreground Fetching):
+Data diambil (fetch) secara langsung dari API saat aplikasi diluncurkan, atau saat Activity/Fragment yang relevan dibuka. Ini adalah metode yang dilakukan sebelum Part 3.
+*. Aksi Pemicu Pengguna (User-Triggered Refresh):
+Menyediakan tombol "Refresh" atau "Pull-to-Refresh" di UI yang secara eksplisit memanggil fungsi pembaruan data (seperti fetchMoviesFromNetwork() atau sejenisnya) di Repository.
+*. Pemuatan Ulang Berdasarkan Siklus Hidup (Lifecycle-Aware Fetching):
+Menggunakan lifecycle events dari Activity atau Fragment (misalnya di onResume()) untuk memeriksa apakah data sudah usang dan perlu diperbarui.
+*. API Pihak Ketiga dengan Push Notifications:
+Jika aplikasi menggunakan backend yang mendukung push notification (seperti Firebase Cloud Messaging), server dapat mengirim pesan ke aplikasi ketika ada data baru. Aplikasi kemudian dapat memicu pengambilan data saat menerima notifikasi.
